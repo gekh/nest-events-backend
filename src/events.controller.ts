@@ -39,7 +39,7 @@ export class EventsController {
         )
 
         this.events[index] = {
-            ...this.event[index],
+            ...this.events[index],
             ...input,
             when: input.when ? 
                 new Date(input.when) : this.events[index].when
