@@ -15,8 +15,9 @@ export class EventsController {
     create() {}
     
     @Patch(':id')
-    update() {}
+    update(@Param('id') id) {}
     
-    @Delete()
-    remove() {}
+
+    @Delete(':id')
+    remove(@Param('id') id) {}
 }
