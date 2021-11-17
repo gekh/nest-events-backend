@@ -4,6 +4,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { Event } from './event.entity';
 import { EventsController } from './events.controller';
+import { EventsModule } from './events/events.module';
 
 @Module({
   imports: [TypeOrmModule.forRoot({
@@ -16,7 +17,8 @@ import { EventsController } from './events.controller';
     entities: [Event],
     synchronize: true,
   }),
-  TypeOrmModule.forFeature([Event])
+  TypeOrmModule.forFeature([Event]),
+  EventsModule
   ],
   controllers: [AppController, EventsController],
   providers: [AppService],
