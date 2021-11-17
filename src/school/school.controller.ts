@@ -1,4 +1,4 @@
-import { Controller, Post } from "@nestjs/common";
+import { Controller, Delete, Get, HttpCode, Param, Post } from "@nestjs/common";
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Subject } from './subject.entity';
@@ -15,54 +15,28 @@ export class SchoolController {
 
   @Post('/create')
   public async savingRelation() {
-    // const subject = new Subject();
-    // subject.name = 'Math';
+    const subject = new Subject()
+    subject.name = 'Myth'
 
-    const subject = await this.subjectRepository.findOne(3);
+    const teacherJohn = new Teacher()
+    teacherJohn.name = 'John Wick'
 
-    // const teacher1 = new Teacher();
-    // teacher1.name = 'John Doe';
+    const teacherHarry = new Teacher()
+    teacherHarry.name = 'Harry Harrison'
 
-    // const teacher2 = new Teacher();
-    // teacher2.name = 'Harry Doe';
+    subject.teachers = [teacherJohn, teacherHarry]
 
-    // subject.teachers = [teacher1, teacher2];
-    // await this.teacherRepository.save([teacher1, teacher2]);
-
-    // How to use One to One
-    // const user = new User();
-    // const profile = new Profile();
-
-    // user.profile = profile;
-    // user.profile = null;
-    // Save the user here
-
-
-    const teacher1 = await this.teacherRepository.findOne(5);
-    const teacher2 = await this.teacherRepository.findOne(6);
-
-    return await this.subjectRepository
-      .createQueryBuilder()
-      .relation(Subject, 'teachers')
-      .of(subject)
-      .add([teacher1, teacher2]);
+    await this.subjectRepository.save(subject)
   }
 
-  @Post('/remove')
-  public async removingRelation() {
-    // const subject = await this.subjectRepository.findOne(
-    //   1,
-    //   { relations: ['teachers'] }
-    // );
-
-    // subject.teachers = subject.teachers.filter(
-    //   teacher => teacher.id !== 2
-    // );
-
-    // await this.subjectRepository.save(subject);
-    await this.subjectRepository.createQueryBuilder('s')
-      .update()
-      .set({ name: "Confidential" })
-      .execute();
+  @Delete('/remove/:id')
+  @HttpCode(204)
+  public async removingRelation(@Param('id') id) {
+    const subject = await this.subjectRepository.findOne(id, {
+      relations:['teachers']
+    })
+    
+    subject.teachers = subject.teachers.filter((t) => t.id !== 1)
+    await this.subjectRepository.save(subject)
   }
 }
