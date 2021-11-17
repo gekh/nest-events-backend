@@ -23,4 +23,10 @@ export class Event {
         // cascade: true
     })
     attendees: Attendee[]
+
+    // Virtual properties
+    attendeeCount?: number
+    attendeeAccepted?: number
+    attendeeMaybe?: number
+    attendeeRejected?: number
 }
