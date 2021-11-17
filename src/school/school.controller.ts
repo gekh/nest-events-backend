@@ -5,7 +5,7 @@ import { Subject } from './subject.entity';
 import { Teacher } from './teacher.entity';
 
 @Controller('school')
-export class TrainingController {
+export class SchoolController {
   constructor(
     @InjectRepository(Subject)
     private readonly subjectRepository: Repository<Subject>,

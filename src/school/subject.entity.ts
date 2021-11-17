@@ -9,9 +9,18 @@ export class Subject {
   @Column()
   name: string;
 
-  @ManyToMany(
-    () => Teacher, (teacher) => teacher.subjects, { cascade: true }
-  )
-  @JoinTable()
+  @ManyToMany(() => Teacher, (teacher) => teacher.subjects, {
+    cascade: true
+  })
+  @JoinTable({
+    name: 'subject_m2m_teacher',
+    joinColumn: {
+      name: 'sid',
+      referencedColumnName: 'id',
+    }, 
+    inverseJoinColumn: {
+      name: 'tid',
+    },
+  })
   teachers: Teacher[];
 }
