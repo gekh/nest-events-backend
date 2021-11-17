@@ -1,4 +1,4 @@
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm"
+import { Column, Entity, IsNull, PrimaryGeneratedColumn } from "typeorm"
 
 @Entity()
 export class Event {
@@ -14,6 +14,6 @@ export class Event {
     @Column()
     when: Date
 
-    @Column()
+    @Column({nullable: true})
     address: string
 }
