@@ -26,14 +26,14 @@ export class EventsController {
             where: [{
                 id: MoreThan(3),
                 when: MoreThan(new Date('2021-02-12T13:00:00'))
-            },{
+            }, {
                 description: Like('%meet%')
             }],
             take: 2,
             order: {
                 'id': 'DESC',
             },
-        })  
+        })
     }
 
     @Get(':id')
@@ -43,7 +43,7 @@ export class EventsController {
     }
 
     @Post()
-    async create(@Body() input: CreateEventDto) {
+    async create(@Body(new ValidationPipe({ groups: ['create'] })) input: CreateEventDto) {
         return await this.repository.save({
             ...input,
             when: new Date(input.when),
@@ -51,7 +51,9 @@ export class EventsController {
     }
 
     @Patch(':id')
-    async update(@Param('id') id, @Body() input: UpdateEventDto) {
+    async update(
+        @Param('id') id, 
+        @Body(new ValidationPipe({ groups: ['update'] })) input: UpdateEventDto) {
         const event = this.repository.findOne(id)
         return await this.repository.save({
             ...event,

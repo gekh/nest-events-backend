@@ -7,7 +7,8 @@ export class CreateEventDto {
     })
     name: string
 
-    @Length(5, 255)
+    @Length(5, 255, {groups: ['create']} )
+    @Length(3, 180, {groups: ['update']} )
     description: string
 
     @IsDateString()
