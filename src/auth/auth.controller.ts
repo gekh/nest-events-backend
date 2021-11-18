@@ -1,9 +1,6 @@
-import { Body, Controller, Get, Logger, Post, Request, UseGuards } from "@nestjs/common";
-import { AuthGuard } from "@nestjs/passport";
-import { InjectRepository } from "@nestjs/typeorm"
-import { Repository } from "typeorm"
-import { AuthService } from "./auth.service";
-import { CreateUserDto } from "./create-user.dto"
+import { Controller, Get, Logger, Post, UseGuards } from "@nestjs/common"
+import { AuthGuard } from "@nestjs/passport"
+import { AuthService } from "./auth.service"
 import { CurrentUser } from "./current-user.decorator"
 import { User } from "./user.entity"
 
@@ -13,21 +10,8 @@ export class AuthController {
 
   constructor(
     private readonly authService: AuthService,
-    @InjectRepository(User)
-    private readonly userRepository: Repository<User>
-  ){}
 
-  @Post('registrate')
-  async registrate(@Body() input: CreateUserDto) {
-    const hash = this.authService.hashPassword(input.password).
-    this.logger.debug(hash)
-    return 'SUCCESS'
-    // this.logg
-    // return await this.userRepository.save({
-    //   ...input,
-    //   password: hash,
-    // })
-  }
+  ) { }
 
   @Post('login')
   @UseGuards(AuthGuard('local'))
