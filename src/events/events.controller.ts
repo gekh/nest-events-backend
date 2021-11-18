@@ -1,4 +1,4 @@
-import { Controller, Delete, Get, Param, Patch, Post, Body, HttpCode, ParseIntPipe, ValidationPipe, Logger, NotFoundException, Query } from "@nestjs/common";
+import { Controller, Delete, Get, Param, Patch, Post, Body, HttpCode, ParseIntPipe, ValidationPipe, Logger, NotFoundException, Query, UsePipes } from "@nestjs/common";
 import { identity } from "rxjs";
 import { CreateEventDto } from "./input/create-event.dto";
 import { UpdateEventDto } from "./input/update-event.dto";
@@ -23,11 +23,16 @@ export class EventsController {
   ) { }
 
   @Get()
+  // @UsePipes(new ValidationPipe({ transform: true }))
   async findAll(@Query() filter: ListEvents) {
-    this.logger.debug(filter)
+    this.logger.debug(JSON.stringify(filter))
     const events = await this.eventsSerivice
-      .getEventsWithAttendeeCountFiltered(filter)
-    this.logger.debug(`Found ${events.length} events.`)
+      .getEventsWithAttendeeCountFilteredPaginated(filter, {
+        total: true,
+        currentPage: filter.page ?? 1,
+        limit: 2,
+      })
+    // this.logger.debug(`Found ${events.length} events.`)
     this.logger.error(`I'm just kidding. There's no actually error here :)`)
     this.logger.warn(`I warn you. Do you hear me? I warn you like hell!`)
     return events

@@ -4,6 +4,7 @@ import { Repository } from "typeorm";
 import { Event } from "./event.entity";
 import { AttendeeAnswerEnum } from "./attendee.entity";
 import { ListEvents, WhenEventFilter } from "./input/list.events";
+import { paginate, PaginateOptions, PaginationResult } from "src/pagination/paginator";
 
 
 @Injectable()
@@ -22,34 +23,34 @@ export class EventsService {
 
   public getEventsWithAttendeeCountQuery() {
     return this.getEventsBaseQuery()
-    .loadRelationCountAndMap(
-      'e.attendeeCount', 'e.attendees'
-    )
-    .loadRelationCountAndMap(
-      'e.attendeeAccepted',
-      'e.attendees',
-      'attendee',
-      (qb) => qb.where('attendee.answer = :answer', {answer:AttendeeAnswerEnum.Accepted})
-    )
-    .loadRelationCountAndMap(
-      'e.attendeeMaybe',
-      'e.attendees',
-      'attendee',
-      (qb) => qb.where('attendee.answer = :answer', {answer:AttendeeAnswerEnum.Maybe})
-    )
-    .loadRelationCountAndMap(
-      'e.attendeeRejected',
-      'e.attendees',
-      'attendee',
-      (qb) => qb.where('attendee.answer = :answer', {answer:AttendeeAnswerEnum.Rejected})
-    )
+      .loadRelationCountAndMap(
+        'e.attendeeCount', 'e.attendees'
+      )
+      .loadRelationCountAndMap(
+        'e.attendeeAccepted',
+        'e.attendees',
+        'attendee',
+        (qb) => qb.where('attendee.answer = :answer', { answer: AttendeeAnswerEnum.Accepted })
+      )
+      .loadRelationCountAndMap(
+        'e.attendeeMaybe',
+        'e.attendees',
+        'attendee',
+        (qb) => qb.where('attendee.answer = :answer', { answer: AttendeeAnswerEnum.Maybe })
+      )
+      .loadRelationCountAndMap(
+        'e.attendeeRejected',
+        'e.attendees',
+        'attendee',
+        (qb) => qb.where('attendee.answer = :answer', { answer: AttendeeAnswerEnum.Rejected })
+      )
   }
 
-  public async getEventsWithAttendeeCountFiltered(filter?: ListEvents) {
+  public getEventsWithAttendeeCountFiltered(filter?: ListEvents) {
     let query = this.getEventsWithAttendeeCountQuery()
 
     if (!filter) {
-      return await query.getMany()
+      return query
     }
 
     if (filter.when) {
@@ -64,7 +65,17 @@ export class EventsService {
       }
     }
 
-    return await query.getMany()
+    return query
+  }
+
+  public async getEventsWithAttendeeCountFilteredPaginated(
+    filter: ListEvents,
+    paginateOptions: PaginateOptions
+    ) : Promise<PaginationResult<Event>> {
+    return await paginate<Event>(
+      this.getEventsWithAttendeeCountFiltered(filter),
+      paginateOptions
+    )
   }
 
   public async getEvent(id: number): Promise<Event | undefined> {
@@ -72,7 +83,7 @@ export class EventsService {
       .andWhere('e.id=:id', { id })
 
     this.logger.debug(query.getSql())
-    
+
     return await query.getOne()
   }
 }
