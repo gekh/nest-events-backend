@@ -1,9 +1,10 @@
-import { Injectable, Logger, UnauthorizedException } from "@nestjs/common";
-import { PassportStrategy } from "@nestjs/passport";
-import { InjectRepository } from "@nestjs/typeorm";
-import { Strategy } from "passport-local";
-import { Repository } from "typeorm";
-import { User } from "./user.entity";
+import { Injectable, Logger, UnauthorizedException } from "@nestjs/common"
+import { PassportStrategy } from "@nestjs/passport"
+import { InjectRepository } from "@nestjs/typeorm"
+import { Strategy } from "passport-local"
+import { Repository } from "typeorm"
+import { User } from "./user.entity"
+import * as bcrypt from "bcrypt"
 
 @Injectable()
 export class LocalStrategy extends PassportStrategy(Strategy, 'local') {
@@ -28,7 +29,7 @@ export class LocalStrategy extends PassportStrategy(Strategy, 'local') {
       throw new UnauthorizedException()
     }
 
-    if (password !== user.password) {
+    if (!(await bcrypt.compare(password, user.password))) {
       this.logger.debug(`Invalid credentials for user ${username}`)
       throw new UnauthorizedException
     }
