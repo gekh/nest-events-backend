@@ -3,6 +3,7 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { Event } from "./event.entity";
 import { AttendeeAnswerEnum } from "./attendee.entity";
+import { ListEvents, WhenEventFilter } from "./input/list.events";
 
 
 @Injectable()
@@ -42,6 +43,28 @@ export class EventsService {
       'attendee',
       (qb) => qb.where('attendee.answer = :answer', {answer:AttendeeAnswerEnum.Rejected})
     )
+  }
+
+  public async getEventsWithAttendeeCountFiltered(filter?: ListEvents) {
+    let query = this.getEventsWithAttendeeCountQuery()
+
+    if (!filter) {
+      return await query.getMany()
+    }
+
+    if (filter.when) {
+      if (Number(filter.when) === WhenEventFilter.Today) {
+        query = query.andWhere(`e.when >= CURDATE() AND e.when <= CURDATE() + INTERVAL 1 DAY`)
+      } else if (Number(filter.when) === WhenEventFilter.Tomorrow) {
+        query = query.andWhere(`e.when >= CURDATE() + INTERVAL 1 DAY AND e.when <= CURDATE() + INTERVAL 2 DAY`)
+      } else if (Number(filter.when) === WhenEventFilter.ThisWeek) {
+        query = query.andWhere(`YEARWEEK(e.when, 1) = YEARWEEK(CURDATE(), 1)`)
+      } else if (Number(filter.when) === WhenEventFilter.NextWeek) {
+        query = query.andWhere(`YEARWEEK(e.when, 1) = YEARWEEK(CURDATE(), 1) + 1`)
+      }
+    }
+
+    return await query.getMany()
   }
 
   public async getEvent(id: number): Promise<Event | undefined> {
