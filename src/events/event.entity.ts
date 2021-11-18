@@ -27,8 +27,11 @@ export class Event {
     attendees: Attendee[]
 
     @ManyToOne(() => User, (user) => user.organized)
-    @JoinColumn()
-    organizer?: User
+    @JoinColumn({name:'organizerId'})
+    organizer: User
+
+    @Column({nullable:true})
+    organizerId:number
 
     // Virtual properties
     attendeeCount?: number

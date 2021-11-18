@@ -1,4 +1,4 @@
-import { Controller, Delete, Get, Param, Patch, Post, Body, HttpCode, ParseIntPipe, ValidationPipe, Logger, NotFoundException, Query, UsePipes, UseGuards } from "@nestjs/common"
+import { Controller, Delete, Get, Param, Patch, Post, Body, HttpCode, ParseIntPipe, ValidationPipe, Logger, NotFoundException, Query, UsePipes, UseGuards, ForbiddenException } from "@nestjs/common"
 import { CreateEventDto } from "./input/create-event.dto"
 import { UpdateEventDto } from "./input/update-event.dto"
 import { Event } from "./event.entity"
@@ -19,8 +19,6 @@ export class EventsController {
   constructor(
     @InjectRepository(Event)
     private readonly eventsRepository: Repository<Event>,
-    @InjectRepository(Attendee)
-    private readonly attendeeRepository: Repository<Attendee>,
     private readonly eventsService: EventsService
   ) { }
 
@@ -39,7 +37,76 @@ export class EventsController {
     this.logger.warn(`I warn you. Do you hear me? I warn you like hell!`)
     return events
   }
+  
+@Get(':id')
+  async findOne(@Param('id', ParseIntPipe) id) {
+    console.log(typeof id)
+    const event = await this.eventsService.getEvent(id)
 
+    if (!event) {
+      throw new NotFoundException()
+    }
+
+    return event
+  }
+
+  @Post()
+  @UseGuards(AuthGuardJwt)
+  async create(
+    @Body(new ValidationPipe({ groups: ['create'] })) input: CreateEventDto,
+    @CurrentUser() user: User,
+  ) {
+    return this.eventsService.createEvent(input, user)
+  }
+
+  @Patch(':id')
+  @UseGuards(AuthGuardJwt)
+  async update(
+    @Param('id') id,
+    @Body(new ValidationPipe({ groups: ['update'] })) input: UpdateEventDto,
+    @CurrentUser() user: User,
+  ) {
+    const event = await this.eventsService.getEvent(id)
+    // const event = await this.eventsRepository.findOne(id, {
+    //   relations: ['organizer'],
+    // })
+    this.logger.debug(id)
+    this.logger.debug(JSON.stringify(event))
+    this.logger.debug(user.id)
+
+    if (!event) {
+      throw new NotFoundException()
+    }
+
+    if (event.organizerId !== user.id) {
+      throw new ForbiddenException(null, 'You are not authorized to change this event')
+    }
+
+    return this.eventsService.updateEvent(event, input)
+  }
+
+  @Delete(':id')
+  @HttpCode(204)
+  @UseGuards(AuthGuardJwt)
+  async remove(
+    @Param('id') id,
+    @CurrentUser() user: User,
+  ) {
+    const event = await this.eventsService.getEvent(id)
+
+    if (!event) {
+      throw new NotFoundException()
+    }
+
+    if (event.organizerId !== user.id) {
+      throw new ForbiddenException(null, 'You are not authorized to remove this event')
+    }
+
+    await this.eventsService.deleteEvent(id)
+  }
+
+
+/*/
   @Get('/practice')
   async practice() {
     console.log(process.env.NODE_ENV)
@@ -86,52 +153,6 @@ export class EventsController {
 
     return 'SUCCESS'
   }
-
-  @Get(':id')
-  async findOne(@Param('id', ParseIntPipe) id) {
-    console.log(typeof id)
-    const event = await this.eventsService.getEvent(id)
-
-    if (!event) {
-      throw new NotFoundException()
-    }
-
-    return event
-  }
-
-  @Post()
-  @UseGuards(AuthGuardJwt)
-  async create(
-    @Body(new ValidationPipe({ groups: ['create'] })) input: CreateEventDto,
-    @CurrentUser() user: User,
-  ) {
-    return this.eventsService.createEvent(input, user)
-  }
-
-  @Patch(':id')
-  async update(
-    @Param('id') id,
-    @Body(new ValidationPipe({ groups: ['update'] })) input: UpdateEventDto) {
-    const event = this.eventsRepository.findOne(id)
-
-    if (!event) {
-      throw new NotFoundException()
-    }
-
-    return await this.eventsRepository.save({
-      ...event,
-      ...input,
-      // when: input.when ? new Date(input.when) : event.when
-    })
-  }
-
-  @Delete(':id')
-  @HttpCode(204)
-  async remove(@Param('id') id) {
-    const result = await this.eventsService.deleteEvent(id)
-    this.logger.debug(JSON.stringify(result))
-    if (result.affected !== 1) {
-      throw new NotFoundException()
-    }
-  }
+/**/
+  
 }

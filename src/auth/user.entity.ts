@@ -22,5 +22,5 @@ export class User {
   profile: Profile
 
   @OneToMany(() => Event, (event) => event.organizer)
-  organized?: Event[]
+  organized: Event[]
 }
