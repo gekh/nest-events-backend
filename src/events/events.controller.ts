@@ -1,13 +1,15 @@
-import { Controller, Delete, Get, Param, Patch, Post, Body, HttpCode, ParseIntPipe, ValidationPipe, Logger, NotFoundException, Query, UsePipes } from "@nestjs/common";
-import { identity } from "rxjs";
-import { CreateEventDto } from "./input/create-event.dto";
-import { UpdateEventDto } from "./input/update-event.dto";
-import { Event } from "./event.entity";
-import { Like, MoreThan, Repository } from "typeorm";
-import { InjectRepository } from "@nestjs/typeorm";
-import { Attendee } from "./attendee.entity";
-import { EventsService } from "./events.service";
-import { ListEvents } from "./input/list.events";
+import { Controller, Delete, Get, Param, Patch, Post, Body, HttpCode, ParseIntPipe, ValidationPipe, Logger, NotFoundException, Query, UsePipes, UseGuards } from "@nestjs/common"
+import { CreateEventDto } from "./input/create-event.dto"
+import { UpdateEventDto } from "./input/update-event.dto"
+import { Event } from "./event.entity"
+import { Like, MoreThan, Repository } from "typeorm"
+import { InjectRepository } from "@nestjs/typeorm"
+import { Attendee } from "./attendee.entity"
+import { EventsService } from "./events.service"
+import { ListEvents } from "./input/list.events"
+import { CurrentUser } from "src/auth/current-user.decorator"
+import { User } from "src/auth/user.entity"
+import { AuthGuardJwt } from "src/auth/auth-guard.jwt"
 
 @Controller('/events')
 export class EventsController {
@@ -19,14 +21,14 @@ export class EventsController {
     private readonly eventsRepository: Repository<Event>,
     @InjectRepository(Attendee)
     private readonly attendeeRepository: Repository<Attendee>,
-    private readonly eventsSerivice: EventsService
+    private readonly eventsService: EventsService
   ) { }
 
   @Get()
   // @UsePipes(new ValidationPipe({ transform: true }))
   async findAll(@Query() filter: ListEvents) {
     this.logger.debug(JSON.stringify(filter))
-    const events = await this.eventsSerivice
+    const events = await this.eventsService
       .getEventsWithAttendeeCountFilteredPaginated(filter, {
         total: true,
         currentPage: filter.page ?? 1,
@@ -88,7 +90,7 @@ export class EventsController {
   @Get(':id')
   async findOne(@Param('id', ParseIntPipe) id) {
     console.log(typeof id)
-    const event = await this.eventsSerivice.getEvent(id)
+    const event = await this.eventsService.getEvent(id)
 
     if (!event) {
       throw new NotFoundException()
@@ -98,11 +100,12 @@ export class EventsController {
   }
 
   @Post()
-  async create(@Body(new ValidationPipe({ groups: ['create'] })) input: CreateEventDto) {
-    return await this.eventsRepository.save({
-      ...input,
-      when: new Date(input.when),
-    })
+  @UseGuards(AuthGuardJwt)
+  async create(
+    @Body(new ValidationPipe({ groups: ['create'] })) input: CreateEventDto,
+    @CurrentUser() user: User,
+  ) {
+    return this.eventsService.createEvent(input, user)
   }
 
   @Patch(':id')
@@ -125,7 +128,7 @@ export class EventsController {
   @Delete(':id')
   @HttpCode(204)
   async remove(@Param('id') id) {
-    const result = await this.eventsSerivice.deleteEvent(id)
+    const result = await this.eventsService.deleteEvent(id)
     this.logger.debug(JSON.stringify(result))
     if (result.affected !== 1) {
       throw new NotFoundException()

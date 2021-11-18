@@ -1,4 +1,6 @@
-import { Column, Entity, IsNull, OneToMany, PrimaryGeneratedColumn } from "typeorm"
+import { IsOptional } from "class-validator"
+import { User } from "src/auth/user.entity"
+import { Column, Entity, IsNull, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm"
 import { Attendee } from "./attendee.entity"
 
 @Entity()
@@ -23,6 +25,10 @@ export class Event {
         // cascade: true
     })
     attendees: Attendee[]
+
+    @ManyToOne(() => User, (user) => user.organized)
+    @JoinColumn()
+    organizer?: User
 
     // Virtual properties
     attendeeCount?: number
