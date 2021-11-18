@@ -5,6 +5,7 @@ import { AppController } from './app.controller';
 import { AppDummy } from './app.dummy';
 import { AppJapaneseService } from './app.japanese.service';
 import { AppService } from './app.service';
+import { AuthModule } from './auth/auth.module';
 import ormConfig from './config/orm.config';
 import ormConfigProd from './config/orm.config.prod';
 import { EventsModule } from './events/events.module';
@@ -24,6 +25,7 @@ import { SchoolModule } from './school/school.module';
     }),
     EventsModule,
     SchoolModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [{
