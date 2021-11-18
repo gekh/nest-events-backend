@@ -7,10 +7,11 @@ import { JwtModule } from '@nestjs/jwt';
 import { AuthService } from './auth.service';
 import { JwtStrategy } from './jwt.strategy';
 import { UsersController } from './users.controller'
+import { Profile } from './profile.entity'
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User]),
+    TypeOrmModule.forFeature([User, Profile]),
     JwtModule.registerAsync({
       useFactory: () => ({
         secret: process.env.AUTH_SECRET,
