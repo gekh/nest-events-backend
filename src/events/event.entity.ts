@@ -1,6 +1,7 @@
 import { Expose } from "class-transformer"
 import { IsOptional } from "class-validator"
 import { User } from "src/auth/user.entity"
+import { PaginationResult } from "src/pagination/paginator"
 import { Column, Entity, IsNull, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm"
 import { Attendee } from "./attendee.entity"
 
@@ -46,3 +47,5 @@ export class Event {
     attendeeMaybe?: number
     attendeeRejected?: number
 }
+
+export type PaginatedEvents = PaginationResult<Event>
