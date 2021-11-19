@@ -130,3 +130,20 @@ export class EventsService {
       .where('e.organizer = :userId', { userId })
 
   }
+
+  public async getEventsAttendedByUserIdPaginated(
+    userId: number,
+    paginateOptions: PaginateOptions): Promise<PaginatedEvents> {
+    return await paginate<Event>(
+      this.getEventsAttendedByUserIdQuery(userId),
+      paginateOptions
+    )
+  }
+
+  private getEventsAttendedByUserIdQuery(userId: number) {
+    return this.getEventsBaseQuery()
+      .leftJoinAndSelect('e.attendess', 'a')
+      .where('a.userId = :userId', { userId })      
+
+  }
+}
