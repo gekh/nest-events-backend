@@ -1,4 +1,4 @@
-import { Controller, Delete, Get, HttpCode, Logger, Param, Post } from "@nestjs/common";
+import { Controller, Delete, Get, HttpCode, Logger, Param, ParseIntPipe, Post } from "@nestjs/common";
 import { InjectRepository } from '@nestjs/typeorm';
 import { json } from "stream/consumers";
 import { Repository } from 'typeorm';
@@ -46,7 +46,7 @@ export class SchoolController {
 
   @Delete('/remove/:id')
   @HttpCode(204)
-  public async removingRelation(@Param('id') id) {
+  public async removingRelation(@Param('id', ParseIntPipe) id: number) {
     // const subject = await this.subjectRepository.findOne(id, {
     //   relations:['teachers']
     // })

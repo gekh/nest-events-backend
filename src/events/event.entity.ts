@@ -7,6 +7,10 @@ import { Attendee } from "./attendee.entity"
 
 @Entity()
 export class Event {
+    constructor(partial?: Partial<Event>) {
+        Object.assign(this, partial)
+    }
+    
     @PrimaryGeneratedColumn()
     @Expose()
     id: number
@@ -23,7 +27,7 @@ export class Event {
     @Expose()
     when: Date
 
-    @Column({nullable: true})
+    @Column({ nullable: true })
     @Expose()
     address: string
 
@@ -34,12 +38,12 @@ export class Event {
     attendees: Attendee[]
 
     @ManyToOne(() => User, (user) => user.organized)
-    @JoinColumn({name:'organizerId'})
+    @JoinColumn({ name: 'organizerId' })
     @Expose()
     organizer: User
 
-    @Column({nullable:true})
-    organizerId:number
+    @Column({ nullable: true })
+    organizerId: number
 
     // Virtual properties
     attendeeCount?: number

@@ -13,11 +13,8 @@ export enum AttendeeAnswerEnum {
 @Entity()
 export class Attendee {
   @PrimaryGeneratedColumn()
-  id: number
-
-  @Column()
   @Expose()
-  name: string
+  id: number
 
   @ManyToOne(() => Event, (event) => event.attendees, {
     // nullable: false
@@ -46,6 +43,5 @@ export class Attendee {
   user: User
 
   @Column()
-  @Expose()
   userId: number
 }
