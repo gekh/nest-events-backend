@@ -18,6 +18,7 @@ export class Attendee {
 
   @ManyToOne(() => Event, (event) => event.attendees, {
     // nullable: false
+    onDelete: 'CASCADE'
   })
   // @JoinColumn({
   //   name: 'event_id',
