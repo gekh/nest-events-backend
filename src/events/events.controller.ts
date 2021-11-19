@@ -1,4 +1,4 @@
-import { Controller, Delete, Get, Param, Patch, Post, Body, HttpCode, ParseIntPipe, ValidationPipe, Logger, NotFoundException, Query, UsePipes, UseGuards, ForbiddenException } from "@nestjs/common"
+import { Controller, Delete, Get, Param, Patch, Post, Body, HttpCode, ParseIntPipe, ValidationPipe, Logger, NotFoundException, Query, UsePipes, UseGuards, ForbiddenException, SerializeOptions, UseInterceptors, ClassSerializerInterceptor } from "@nestjs/common"
 import { CreateEventDto } from "./input/create-event.dto"
 import { UpdateEventDto } from "./input/update-event.dto"
 import { Event } from "./event.entity"
@@ -12,6 +12,7 @@ import { User } from "src/auth/user.entity"
 import { AuthGuardJwt } from "src/auth/auth-guard.jwt"
 
 @Controller('/events')
+@SerializeOptions({ strategy: 'excludeAll' })
 export class EventsController {
 
   private readonly logger = new Logger(EventsController.name)
@@ -24,6 +25,7 @@ export class EventsController {
 
   @Get()
   // @UsePipes(new ValidationPipe({ transform: true }))
+  @UseInterceptors(ClassSerializerInterceptor)
   async findAll(@Query() filter: ListEvents) {
     this.logger.debug(JSON.stringify(filter))
     const events = await this.eventsService
@@ -37,8 +39,9 @@ export class EventsController {
     this.logger.warn(`I warn you. Do you hear me? I warn you like hell!`)
     return events
   }
-  
-@Get(':id')
+
+  @Get(':id')
+  @UseInterceptors(ClassSerializerInterceptor)
   async findOne(@Param('id', ParseIntPipe) id) {
     console.log(typeof id)
     const event = await this.eventsService.getEvent(id)
@@ -106,53 +109,53 @@ export class EventsController {
   }
 
 
-/*/
-  @Get('/practice')
-  async practice() {
-    console.log(process.env.NODE_ENV)
-    return await this.eventsRepository.find({
-      select: ['id', 'when'],
-      where: [{
-        id: MoreThan(3),
-        when: MoreThan(new Date('2021-02-12T13:00:00'))
-      }, {
-        description: Like('%meet%')
-      }],
-      take: 2,
-      order: {
-        'id': 'DESC',
-      },
-    })
-  }
-
-  @Get('/practice2')
-  async practice2() {
-    return await this.eventsRepository.findOne(1, {
-      relations: ['attendees']
-    })
-  }
-
-  @Get('/practice3')
-  async practice3() {
-    const event = await this.eventsRepository.findOne(1, {
-      relations: ['attendees'],
-    })
-
-    // const event = new Event()
-    // event.id = 1
-
-    const attendee = new Attendee()
-    attendee.name = 'Rachel'
-    // attendee.event = event
-
-    event.attendees.push(attendee)
-    // event.attendees = []
-
-    // await this.attendeeRepository.save(attendee)
-    await this.eventsRepository.save(event)
-
-    return 'SUCCESS'
-  }
-/**/
+  /*/
+    @Get('/practice')
+    async practice() {
+      console.log(process.env.NODE_ENV)
+      return await this.eventsRepository.find({
+        select: ['id', 'when'],
+        where: [{
+          id: MoreThan(3),
+          when: MoreThan(new Date('2021-02-12T13:00:00'))
+        }, {
+          description: Like('%meet%')
+        }],
+        take: 2,
+        order: {
+          'id': 'DESC',
+        },
+      })
+    }
   
+    @Get('/practice2')
+    async practice2() {
+      return await this.eventsRepository.findOne(1, {
+        relations: ['attendees']
+      })
+    }
+  
+    @Get('/practice3')
+    async practice3() {
+      const event = await this.eventsRepository.findOne(1, {
+        relations: ['attendees'],
+      })
+  
+      // const event = new Event()
+      // event.id = 1
+  
+      const attendee = new Attendee()
+      attendee.name = 'Rachel'
+      // attendee.event = event
+  
+      event.attendees.push(attendee)
+      // event.attendees = []
+  
+      // await this.attendeeRepository.save(attendee)
+      await this.eventsRepository.save(event)
+  
+      return 'SUCCESS'
+    }
+  /**/
+
 }
