@@ -27,7 +27,7 @@ export class EventsController {
   // @UsePipes(new ValidationPipe({ transform: true }))
   @UseInterceptors(ClassSerializerInterceptor)
   async findAll(@Query() filter: ListEvents) {
-    this.logger.debug(JSON.stringify(filter))
+    // this.logger.debug(JSON.stringify(filter))
     const events = await this.eventsService
       .getEventsWithAttendeeCountFilteredPaginated(filter, {
         total: true,
@@ -35,8 +35,8 @@ export class EventsController {
         limit: 2,
       })
     // this.logger.debug(`Found ${events.length} events.`)
-    this.logger.error(`I'm just kidding. There's no actually error here :)`)
-    this.logger.warn(`I warn you. Do you hear me? I warn you like hell!`)
+    // this.logger.error(`I'm just kidding. There's no actually error here :)`)
+    // this.logger.warn(`I warn you. Do you hear me? I warn you like hell!`)
     return events
   }
 
