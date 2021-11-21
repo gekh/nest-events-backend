@@ -41,17 +41,19 @@ describe('EventsController Group', () => {
 
     const spy = jest
       .spyOn(eventsService, 'getEventsWithAttendeeCountFilteredPaginated')
-      .mockImplementation((): any => result)
+      .mockImplementation((): any => {
+        return { first: 1, last: 1, limit: 2, data: [] }
+      })
 
     expect(await eventsController.findAll(new ListEvents()))
-      .toEqual(result)
+      .toEqual({ first: 1, last: 1, limit: 2, data: [] })
     expect(spy).toBeCalledTimes(1)
   })
 
   it('should not delete an event when it is not found.', async () => {
-    const deleteSpy = jest.spyOn(eventsService, 'deleteEvent')
     const findSpy = jest.spyOn(eventsService, 'getEvent')
       .mockImplementation((): any => undefined)
+    const deleteSpy = jest.spyOn(eventsService, 'deleteEvent')
 
     try {
       await eventsController.remove(1, new User())
@@ -64,15 +66,19 @@ describe('EventsController Group', () => {
   })
 
   it('should not delete an event that do not belong to a user', async () => {
-    const spy = jest
-      .spyOn(eventsService, 'getEvent')
+    const getEventSpy = jest.spyOn(eventsService, 'getEvent')
       .mockImplementation((): any => { return { id: 179, organizerId: 424 } })
+    const deleteSpy = jest.spyOn(eventsService, 'deleteEvent')
 
     try {
       await eventsController.remove(179, { id: 111 } as User)
     } catch (error) {
       expect(error).toBeInstanceOf(ForbiddenException)
     }
+
+    expect(getEventSpy).toBeCalledTimes(1)
+    expect(getEventSpy).toBeCalledWith(179)
+    expect(deleteSpy).toBeCalledTimes(0)
   })
 
   it('should delete an event', async () => {
