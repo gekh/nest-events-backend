@@ -1,10 +1,10 @@
-import { User } from "./../auth/user.entity"
+import { User } from "../auth/user.entity"
 import { Repository } from "typeorm"
 import { Event } from "./event.entity"
 import { EventsController } from "./events.controller"
 import { EventsService } from "./events.service"
 import { ListEvents } from "./input/list.events"
-import { NotFoundException } from "@nestjs/common"
+import { ForbiddenException, NotFoundException } from "@nestjs/common"
 
 // beforeEach(() => console.log('a whole file'))
 
@@ -64,11 +64,31 @@ describe('EventsController Group', () => {
   })
 
   it('should not delete an event that do not belong to a user', async () => {
-    
+    const spy = jest
+      .spyOn(eventsService, 'getEvent')
+      .mockImplementation((): any => { return { id: 179, organizerId: 424 } })
+
+    try {
+      await eventsController.remove(179, { id: 111 } as User)
+    } catch (error) {
+      expect(error).toBeInstanceOf(ForbiddenException)
+    }
   })
 
   it('should delete an event', async () => {
-    
+    const getEventSpy = jest.spyOn(eventsService, 'getEvent')
+      .mockImplementation((): any => { return { id: 179, organizerId: 424 } })
+
+    const deleteEventSpy = jest.spyOn(eventsService, 'deleteEvent')
+      .mockImplementation()
+
+    await eventsController.remove(179, { id: 424 } as User)
+
+    expect(getEventSpy).toBeCalledTimes(1)
+    expect(getEventSpy).toBeCalledWith(179)
+
+    expect(deleteEventSpy).toBeCalledTimes(1)
+    expect(deleteEventSpy).toBeCalledWith(179)
   })
   /**/
 })
