@@ -3,14 +3,22 @@ import { Repository } from "typeorm"
 import { EventsService } from "./events.service"
 import { Test } from "@nestjs/testing"
 import { Event } from "./event.entity"
+import * as paginator from './../pagination/paginator'
+
+
+jest.mock('./../pagination/paginator')
 
 describe('EventsService', () => {
   let service: EventsService
   let repository: Repository<Event>
   let selectQb
   let deleteQb
+  let mockedPaginate
 
   beforeEach(async () => {
+
+    mockedPaginate = paginator.paginate as jest.Mock
+
     deleteQb = {
       where: jest.fn(),
       execute: jest.fn(),
@@ -94,6 +102,53 @@ describe('EventsService', () => {
       expect(whereSpy).toBeCalledWith('id = :id', { id: dummyId })
 
       expect(executeSpy).toBeCalledTimes(1)
+    })
+  })
+
+  describe('getEventsAttendedByUserIdPaginated', () => {
+    it('should return a list of paginated events attended by user', async () => {
+
+      const createQueryBuilderSpy = jest.spyOn(repository, 'createQueryBuilder')
+      const orderBySpy = jest.spyOn(selectQb, 'orderBy')
+        .mockReturnValue(selectQb)
+      const leftJoinAndSelectSpy = jest.spyOn(selectQb, 'leftJoinAndSelect')
+        .mockReturnValue(selectQb)
+      const whereSpy = jest.spyOn(selectQb, 'where')
+        .mockReturnValue(selectQb)
+
+      mockedPaginate.mockResolvedValue({
+        first: 1,
+        last: 1,
+        total: 5,
+        data: [],
+      })
+
+      await expect(
+        service.getEventsAttendedByUserIdPaginated(323, {
+          currentPage: 1,
+          limit: 5,
+        })
+      ).resolves.toEqual({
+        first: 1,
+        last: 1,
+        total: 5,
+        data: [],
+      })
+
+      expect(createQueryBuilderSpy).toBeCalledTimes(1)
+      expect(createQueryBuilderSpy).toBeCalledWith('e')
+      expect(orderBySpy).toBeCalledTimes(1)
+      expect(orderBySpy).toBeCalledWith('e.id', 'DESC')
+      expect(leftJoinAndSelectSpy).toBeCalledTimes(1)
+      expect(leftJoinAndSelectSpy).toBeCalledWith('e.attendess', 'a')
+      expect(whereSpy).toBeCalledTimes(1)
+      expect(whereSpy).toBeCalledWith('a.userId = :userId', { userId: 323 })
+
+      expect(mockedPaginate).toBeCalledTimes(1)
+      expect(mockedPaginate).toBeCalledWith(selectQb, {
+        currentPage: 1,
+        limit: 5,
+      })
     })
   })
 })
