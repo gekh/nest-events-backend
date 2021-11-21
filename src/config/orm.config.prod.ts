@@ -18,5 +18,6 @@ export default registerAs(
     database: process.env.DB_DATABASE,
     entities: [Event, Attendee, Subject, Teacher, User, Profile],
     synchronize: false,
+    dropSchema: false,
   })
 )
