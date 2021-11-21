@@ -1,39 +1,24 @@
 import { INestApplication, ValidationPipe } from "@nestjs/common"
 import { Test, TestingModule } from "@nestjs/testing"
-import { AppModule } from "./../src/app.module"
+import { AppModule } from "../src/app.module"
 import * as request from "supertest"
 import { Connection } from "typeorm"
-import * as fs from "fs"
-import * as path from "path"
-import { response } from "express"
-import { AuthService } from "./../src/auth/auth.service"
-import { User } from "./../src/auth/user.entity"
+import { tokenForUser as tokenForUserBase, loadFixtures as loadFixturesBase } from "./utils"
+import { User } from "../src/auth/user.entity"
 
 let app: INestApplication
 let mod: TestingModule
 let connection: Connection
 
-const loadFixtures = async (sqlFileName: string) => {
-  const sql = fs.readFileSync(
-    path.join(__dirname, 'fixtures', sqlFileName),
-    'utf8'
-  )
+const loadFixtures = async (sqlFileName: string) =>
+  loadFixturesBase(connection, sqlFileName)
 
-  const queryRunner = connection.driver.createQueryRunner('master')
-
-  for (const c of sql.split(';')) {
-    await queryRunner.query(c)
-  }
-}
-
-export const tokenForUser = (
+const tokenForUser = (
   user: Partial<User> = {
     id: 1,
     username: 'e2e-test'
   }
-): string => {
-  return app.get(AuthService).getTokenForUser(user as User)
-}
+): string => tokenForUserBase(app, user)
 
 describe("Events (e2e)", () => {
   beforeEach(async () => {
@@ -221,7 +206,7 @@ describe("Events (e2e)", () => {
 
   it('should throw an error when removing a nonexistent event', async () => {
     await loadFixtures('1-user.sql')
-  
+
     return request(app.getHttpServer())
       .delete('/events/424')
       .set('Authorization', `Bearer ${tokenForUser()}`)
