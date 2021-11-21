@@ -43,7 +43,7 @@ export class EventsController {
   @Get(':id')
   @UseInterceptors(ClassSerializerInterceptor)
   async findOne(@Param('id', ParseIntPipe) id: number) {
-    console.log(typeof id)
+    // console.log(typeof id)
     const event = await this.eventsService.getEventWithAttendeeCount(id)
 
     if (!event) {
@@ -67,9 +67,11 @@ export class EventsController {
   @UseGuards(AuthGuardJwt)
   async update(
     @Param('id', ParseIntPipe) id: number,
-    @Body(new ValidationPipe({ groups: ['update'] })) input: UpdateEventDto,
+    // @Body(new ValidationPipe({ groups: ['update'] })) input: UpdateEventDto,
+    @Body(new ValidationPipe()) input: UpdateEventDto,
     @CurrentUser() user: User,
   ) {
+    // console.log('LET\'S PATCH IT WELL!')
     const event = await this.eventsService.getEvent(id)
     // const event = await this.eventsRepository.findOne(id, {
     //   relations: ['organizer'],
